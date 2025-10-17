@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - KLH Lost & Found{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-list"></i> Lost & Found Items</h1>
+            {% if user.is_authenticated %}
+                <a href="{% url 'post_item' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Post New Item
+                </a>
+            {% endif %}
+        </div>
+
+        <!-- Search and Filter Section -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form method="get" action="{% url 'home' %}">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <input type="text" name="search" class="form-control" 
+                                   placeholder="Search items..." 
+                                   value="{{ request.GET.search }}">
+                        </div>
+                        <div class="col-md-3">
+                            <select name="category" class="form-control">
+                                <option value="">All Categories</option>
+                                {% for value, label in categories %}
+                                    <option value="{{ value }}" 
+                                            {% if request.GET.category == value %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select name="status" class="form-control">
+                                <option value="">All Status</option>
+                                {% for value, label in statuses %}
+                                    <option value="{{ value }}" 
+                                            {% if request.GET.status == value %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-search"></i> Search
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Items Grid -->
+        {% if items %}
+            <div class="row">
+                {% for item in items %}
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100 shadow-sm">
+                            {% if item.image %}
+                                <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.title }}" style="height: 200px; object-fit: cover;">
+                            {% else %}
+                                <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 200px;">
+                                    <i class="fas fa-image fa-3x text-light"></i>
+                                </div>
+                            {% endif %}
+                            <div class="card-body">
+                                <h5 class="card-title">{{ item.title }}</h5>
+                                <p class="card-text text-muted">{{ item.description|truncatewords:15 }}</p>
+                                
+                                <div class="mb-2">
+                                    <span class="badge bg-info">{{ item.get_category_display }}</span>
+                                    <span class="badge 
+                                        {% if item.status == 'lost' %}bg-danger
+                                        {% elif item.status == 'found' %}bg-success
+                                        {% else %}bg-secondary{% endif %}">
+                                        {{ item.get_status_display }}
+                                    </span>
+                                </div>
+                                
+                                <p class="card-text mb-1">
+                                    <small class="text-muted">
+                                        <i class="fas fa-map-marker-alt"></i> {{ item.location_lost }}
+                                    </small>
+                                </p>
+                                <p class="card-text mb-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar"></i> {{ item.date_lost }}
+                                    </small>
+                                </p>
+                                
+                                <a href="{% url 'item_detail' item.pk %}" class="btn btn-primary btn-sm w-100">
+                                    <i class="fas fa-eye"></i> View Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info text-center">
+                <i class="fas fa-info-circle"></i> No items found. 
+                {% if user.is_authenticated %}
+                    <a href="{% url 'post_item' %}">Post the first item!</a>
+                {% else %}
+                    Please login to post items.
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

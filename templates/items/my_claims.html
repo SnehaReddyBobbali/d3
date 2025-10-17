@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}My Claims - KLH Lost & Found{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1 class="mb-4"><i class="fas fa-hand-holding"></i> My Claims</h1>
+
+        {% if claims %}
+            <div class="row">
+                {% for claim in claims %}
+                    <div class="col-md-6 mb-4">
+                        <div class="card shadow-sm">
+                            <div class="card-header 
+                                {% if claim.status == 'pending' %}bg-warning
+                                {% elif claim.status == 'approved' %}bg-success text-white
+                                {% else %}bg-danger text-white{% endif %}">
+                                <strong>Status: {{ claim.get_status_display }}</strong>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">{{ claim.item.title }}</h5>
+                                
+                                {% if claim.item.image %}
+                                    <img src="{{ claim.item.image.url }}" alt="{{ claim.item.title }}" 
+                                         class="img-fluid mb-2" style="max-height: 150px;">
+                                {% endif %}
+                                
+                                <p class="card-text"><strong>Your Message:</strong></p>
+                                <p class="card-text text-muted">{{ claim.message }}</p>
+                                
+                                <hr>
+                                
+                                <p class="mb-1"><strong>Item Owner:</strong> {{ claim.item.posted_by.email }}</p>
+                                <p class="mb-1"><strong>Contact:</strong> {{ claim.item.contact_info }}</p>
+                                <p class="mb-1"><strong>Claimed on:</strong> {{ claim.created_at|date:"F d, Y" }}</p>
+                                
+                                <a href="{% url 'item_detail' claim.item.pk %}" class="btn btn-primary btn-sm mt-2">
+                                    <i class="fas fa-eye"></i> View Item
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info text-center">
+                <i class="fas fa-info-circle"></i> You haven't made any claims yet.
+                <a href="{% url 'home' %}">Browse items to claim!</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

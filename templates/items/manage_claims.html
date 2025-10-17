@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Claims - KLH Lost & Found{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="mb-4">
+            <h1><i class="fas fa-tasks"></i> Manage Claims</h1>
+            <p class="text-muted">Item: <strong>{{ item.title }}</strong></p>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        {% if item.image %}
+                            <img src="{{ item.image.url }}" alt="{{ item.title }}" class="img-fluid">
+                        {% else %}
+                            <div class="bg-secondary text-center p-5">
+                                <i class="fas fa-image fa-3x text-light"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-9">
+                        <h4>{{ item.title }}</h4>
+                        <p>{{ item.description }}</p>
+                        <p><strong>Location:</strong> {{ item.location_lost }} | <strong>Date:</strong> {{ item.date_lost }}</p>
+                        <a href="{% url 'item_detail' item.pk %}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-eye"></i> View Full Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h3 class="mb-3">Claims ({{ claims.count }})</h3>
+        
+        {% if claims %}
+            <div class="row">
+                {% for claim in claims %}
+                    <div class="col-md-6 mb-4">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-header 
+                                {% if claim.status == 'pending' %}bg-warning
+                                {% elif claim.status == 'approved' %}bg-success text-white
+                                {% else %}bg-danger text-white{% endif %}">
+                                <strong>{{ claim.get_status_display }}</strong>
+                            </div>
+                            <div class="card-body">
+                                <p><strong><i class="fas fa-user"></i> Claimed by:</strong><br>
+                                {{ claim.claimed_by.email }}</p>
+                                
+                                <p><strong><i class="fas fa-comment"></i> Message:</strong></p>
+                                <p class="card-text">{{ claim.message }}</p>
+                                
+                                <p class="text-muted">
+                                    <small><i class="fas fa-clock"></i> {{ claim.created_at|date:"F d, Y g:i A" }}</small>
+                                </p>
+                                
+                                {% if claim.status == 'pending' %}
+                                    <hr>
+                                    <div class="btn-group w-100" role="group">
+                                        <a href="{% url 'update_claim_status' claim.pk 'approved' %}" 
+                                           class="btn btn-success"
+                                           onclick="return confirm('Approve this claim and mark item as claimed?');">
+                                            <i class="fas fa-check"></i> Approve
+                                        </a>
+                                        <a href="{% url 'update_claim_status' claim.pk 'rejected' %}" 
+                                           class="btn btn-danger"
+                                           onclick="return confirm('Reject this claim?');">
+                                            <i class="fas fa-times"></i> Reject
+                                        </a>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info text-center">
+                <i class="fas fa-info-circle"></i> No claims received yet for this item.
+            </div>
+        {% endif %}
+        
+        <a href="{% url 'my_items' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to My Items
+        </a>
+    </div>
+</div>
+{% endblock %}

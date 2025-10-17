@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ item.title }} - KLH Lost & Found{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            {% if item.image %}
+                <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.title }}" style="max-height: 400px; object-fit: cover;">
+            {% else %}
+                <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 300px;">
+                    <i class="fas fa-image fa-5x text-light"></i>
+                </div>
+            {% endif %}
+            
+            <div class="card-body">
+                <h2 class="card-title">{{ item.title }}</h2>
+                
+                <div class="mb-3">
+                    <span class="badge bg-info">{{ item.get_category_display }}</span>
+                    <span class="badge 
+                        {% if item.status == 'lost' %}bg-danger
+                        {% elif item.status == 'found' %}bg-success
+                        {% else %}bg-secondary{% endif %}">
+                        {{ item.get_status_display }}
+                    </span>
+                </div>
+                
+                <h5>Description</h5>
+                <p>{{ item.description }}</p>
+                
+                <hr>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong><i class="fas fa-map-marker-alt"></i> Location:</strong><br>
+                        {{ item.location_lost }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong><i class="fas fa-calendar"></i> Date:</strong><br>
+                        {{ item.date_lost }}</p>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong><i class="fas fa-user"></i> Posted by:</strong><br>
+                        {{ item.posted_by.email }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong><i class="fas fa-phone"></i> Contact:</strong><br>
+                        {{ item.contact_info }}</p>
+                    </div>
+                </div>
+                
+                <p class="text-muted">
+                    <small><i class="fas fa-clock"></i> Posted on {{ item.created_at|date:"F d, Y" }}</small>
+                </p>
+                
+                <!-- Action Buttons -->
+                <div class="mt-4">
+                    {% if user.is_authenticated %}
+                        {% if item.posted_by == user %}
+                            <a href="{% url 'edit_item' item.pk %}" class="btn btn-warning">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            <a href="{% url 'delete_item' item.pk %}" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> Delete
+                            </a>
+                            <a href="{% url 'manage_claims' item.pk %}" class="btn btn-info">
+                                <i class="fas fa-tasks"></i> Manage Claims ({{ item.claims.count }})
+                            </a>
+                        {% else %}
+                            {% if not user_has_claimed and item.status != 'claimed' %}
+                                <a href="{% url 'claim_item' item.pk %}" class="btn btn-success">
+                                    <i class="fas fa-hand-holding"></i> Claim This Item
+                                </a>
+                            {% elif user_has_claimed %}
+                                <button class="btn btn-secondary" disabled>
+                                    <i class="fas fa-check"></i> Already Claimed
+                                </button>
+                            {% endif %}
+                        {% endif %}
+                    {% else %}
+                        <a href="{% url 'account_login' %}" class="btn btn-primary">
+                            <i class="fas fa-sign-in-alt"></i> Login to Claim
+                        </a>
+                    {% endif %}
+                    
+                    <a href="{% url 'home' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to List
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Claims Sidebar -->
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-hand-holding"></i> Claims ({{ item.claims.count }})</h5>
+            </div>
+            <div class="card-body">
+                {% if item.claims.all %}
+                    <ul class="list-group">
+                        {% for claim in item.claims.all %}
+                            <li class="list-group-item">
+                                <p class="mb-1"><strong>{{ claim.claimed_by.email }}</strong></p>
+                                <p class="mb-1"><small>{{ claim.message|truncatewords:10 }}</small></p>
+                                <span class="badge 
+                                    {% if claim.status == 'pending' %}bg-warning
+                                    {% elif claim.status == 'approved' %}bg-success
+                                    {% else %}bg-danger{% endif %}">
+                                    {{ claim.get_status_display }}
+                                </span>
+                                <br>
+                                <small class="text-muted">{{ claim.created_at|date:"M d, Y" }}</small>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted">No claims yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

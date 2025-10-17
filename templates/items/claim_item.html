@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Claim Item - KLH Lost & Found{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-success text-white">
+                <h3 class="mb-0"><i class="fas fa-hand-holding"></i> Claim Item</h3>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> 
+                    Please provide details about why this item belongs to you. The item owner will review your claim.
+                </div>
+                
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5>{{ item.title }}</h5>
+                        {% if item.image %}
+                            <img src="{{ item.image.url }}" alt="{{ item.title }}" class="img-fluid mb-2" style="max-height: 200px;">
+                        {% endif %}
+                        <p class="text-muted">{{ item.description }}</p>
+                        <p><strong>Location:</strong> {{ item.location_lost }}</p>
+                        <p><strong>Date:</strong> {{ item.date_lost }}</p>
+                    </div>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.message.id_for_label }}" class="form-label">
+                            Your Claim Message *
+                        </label>
+                        {{ form.message }}
+                        {% if form.message.errors %}
+                            <div class="text-danger">{{ form.message.errors }}</div>
+                        {% endif %}
+                        <small class="form-text text-muted">
+                            Provide specific details about the item (color, brand, unique features, etc.) to help verify ownership.
+                        </small>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'item_detail' item.pk %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-check"></i> Submit Claim
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
